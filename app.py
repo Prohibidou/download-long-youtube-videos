@@ -154,7 +154,7 @@ def do_download(task_id, url, quality, premiere_mode=False):
         else:
             format_sel = f'best[height<={quality}][ext=mp4]/best[height<={quality}]/best[ext=mp4]/best'
 
-    output_template = os.path.join(DOWNLOAD_DIR, f'{task_id}_%(title)s.%(ext)s')
+    output_template = os.path.join(DOWNLOAD_DIR, f'{task_id}_%(id)s.%(ext)s')
 
     ydl_opts = {
         'format': format_sel,
@@ -162,8 +162,6 @@ def do_download(task_id, url, quality, premiere_mode=False):
         'progress_hooks': [progress_hook],
         'quiet': True,
         'no_warnings': True,
-        'windowsfilenames': True,
-        'restrictfilenames': True,
     }
 
     if ffmpeg_available:
@@ -172,6 +170,7 @@ def do_download(task_id, url, quality, premiere_mode=False):
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
+            video_title = info.get('title', 'video')
 
             # Find the actual downloaded file by scanning the downloads dir
             actual_file = None
@@ -186,11 +185,11 @@ def do_download(task_id, url, quality, premiere_mode=False):
                     progress_store[task_id]['status'] = 'converting'
                     actual_file = convert_to_cfr(task_id, actual_file)
 
-                # Clean display name: remove the task_id prefix
-                display_name = actual_file
-                prefix = f'{task_id}_'
-                if display_name.startswith(prefix):
-                    display_name = display_name[len(prefix):]
+                # Build a clean display name from the video title
+                ext = os.path.splitext(actual_file)[1]
+                # Sanitize title for display (remove chars illegal in Windows filenames)
+                safe_title = ''.join(c if c not in r'<>:"/\|?*' else '_' for c in video_title)
+                display_name = safe_title + ext
 
                 progress_store[task_id]['status'] = 'done'
                 progress_store[task_id]['filename'] = actual_file
