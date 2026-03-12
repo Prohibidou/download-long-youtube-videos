@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube HD Downloader</title>
+    <meta name="description" content="Descarga videos de YouTube en calidad HD de forma rápida y sencilla">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css?v=2">
+</head>
+<body>
+    <!-- Animated background -->
+    <div class="bg-animation">
+        <div class="bg-orb bg-orb-1"></div>
+        <div class="bg-orb bg-orb-2"></div>
+        <div class="bg-orb bg-orb-3"></div>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                        <rect width="24" height="24" rx="6" fill="url(#grad1)"/>
+                        <polygon points="10,7 17,12 10,17" fill="white"/>
+                        <defs>
+                            <linearGradient id="grad1" x1="0" y1="0" x2="24" y2="24">
+                                <stop offset="0%" style="stop-color:#FF0044"/>
+                                <stop offset="100%" style="stop-color:#FF4488"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <h1>YouTube <span class="accent">HD</span> Downloader</h1>
+            </div>
+            <p class="subtitle">Descarga tus videos favoritos en la mejor calidad</p>
+        </header>
+
+        <!-- Search Section -->
+        <section class="search-section glass-card">
+            <div class="input-group">
+                <div class="input-wrapper">
+                    <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                    </svg>
+                    <input type="text" id="urlInput" placeholder="Pega aquí la URL del video de YouTube..." autocomplete="off">
+                    <button id="clearBtn" class="clear-btn" title="Limpiar" style="display:none;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+                <button id="fetchBtn" class="btn btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <span>Buscar</span>
+                </button>
+            </div>
+            <div id="errorMsg" class="error-msg" style="display:none;"></div>
+        </section>
+
+        <!-- Video Info Section -->
+        <section id="videoInfo" class="video-info glass-card" style="display:none;">
+            <div class="video-preview">
+                <div class="thumbnail-wrapper">
+                    <img id="thumbnail" src="" alt="Video thumbnail">
+                    <div class="duration-badge" id="duration"></div>
+                </div>
+                <div class="video-details">
+                    <h2 id="videoTitle" class="video-title"></h2>
+                    <p id="videoChannel" class="video-channel"></p>
+                    <div class="video-stats">
+                        <span id="viewCount" class="stat-badge"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="download-options">
+                <div class="quality-selector">
+                    <label for="qualitySelect">Calidad:</label>
+                    <select id="qualitySelect" class="select-styled">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                <button id="downloadBtn" class="btn btn-download">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    <span>Descargar Video</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Progress Section -->
+        <section id="progressSection" class="progress-section glass-card" style="display:none;">
+            <div class="progress-header">
+                <h3 id="progressTitle">Descargando...</h3>
+                <span id="progressPercent" class="progress-percent">0%</span>
+            </div>
+            <div class="progress-bar-wrapper">
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress-bar-glow"></div>
+                </div>
+            </div>
+            <div class="progress-stats">
+                <span id="progressSpeed" class="progress-stat"></span>
+                <span id="progressEta" class="progress-stat"></span>
+            </div>
+        </section>
+
+        <!-- Done Section -->
+        <section id="doneSection" class="done-section glass-card" style="display:none;">
+            <div class="done-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+            </div>
+            <h3>¡Descarga completa!</h3>
+            <p id="doneFilename" class="done-filename"></p>
+            <button id="downloadLink" class="btn btn-save">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>Guardar Archivo</span>
+            </button>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Powered by <strong>yt-dlp</strong> · Solo para uso personal</p>
+        </footer>
+    </div>
+
+    <script src="/static/app.js?v=2"></script>
+</body>
+</html>
