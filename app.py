@@ -15,10 +15,18 @@ os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 # Store download progress per task
 progress_store = {}
 
+COOKIES_FILE = os.path.join(BASE_DIR, 'cookies.txt')
+
 
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+@app.route('/api/cookies-status')
+def cookies_status():
+    has_cookies = os.path.exists(COOKIES_FILE)
+    return jsonify({'has_cookies': has_cookies})
 
 
 @app.route('/api/info', methods=['POST'])
@@ -33,8 +41,9 @@ def get_info():
         'quiet': True,
         'no_warnings': True,
         'skip_download': True,
-        'extractor_args': {'youtube': {'player_client': ['mweb']}},
     }
+    if os.path.exists(COOKIES_FILE):
+        ydl_opts['cookiefile'] = COOKIES_FILE
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -163,8 +172,9 @@ def do_download(task_id, url, quality, premiere_mode=False):
         'progress_hooks': [progress_hook],
         'quiet': True,
         'no_warnings': True,
-        'extractor_args': {'youtube': {'player_client': ['mweb']}},
     }
+    if os.path.exists(COOKIES_FILE):
+        ydl_opts['cookiefile'] = COOKIES_FILE
 
     if ffmpeg_available:
         ydl_opts['merge_output_format'] = 'mp4'

@@ -24,6 +24,18 @@ const downloadLink = document.getElementById('downloadLink');
 
 let currentUrl = '';
 
+// ===== Check Cookies Status =====
+(async () => {
+    try {
+        const res = await fetch('/api/cookies-status');
+        const data = await res.json();
+        const banner = document.getElementById('cookiesBanner');
+        if (!data.has_cookies && banner) {
+            banner.style.display = 'block';
+        }
+    } catch (e) {}
+})();
+
 // ===== Input Events =====
 urlInput.addEventListener('input', () => {
     clearBtn.style.display = urlInput.value ? 'flex' : 'none';
