@@ -87,28 +87,33 @@ def convert_to_cfr(task_id, filename):
 
     cmd = [
         'ffmpeg', '-i', input_path,
-        '-c:v', 'libx264',     # H.264 codec (Premiere-friendly)
-        '-preset', 'medium',    # Balance speed/quality
-        '-crf', '18',           # High quality (lower = better, 18 is visually lossless)
-        '-r', '30',             # Force 30fps constant
-        '-vsync', 'cfr',        # Constant frame rate
-        '-c:a', 'aac',          # AAC audio
-        '-b:a', '192k',         # Good audio bitrate
+        '-c:v', 'libx264',         # H.264 codec (Premiere-friendly)
+        '-preset', 'fast',          # Fast encoding for long videos
+        '-crf', '18',               # High quality
+        '-r', '30',                 # Force 30fps constant
+        '-fps_mode', 'cfr',         # Constant frame rate (replaces deprecated -vsync)
+        '-c:a', 'aac',              # AAC audio
+        '-b:a', '192k',             # Good audio bitrate
         '-movflags', '+faststart',  # Web-optimized MP4
-        '-y',                   # Overwrite output
+        '-y',                       # Overwrite output
         output_path
     ]
 
     try:
-        subprocess.run(cmd, check=True, capture_output=True)
+        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
         # Remove original VFR file, keep only the CFR version
         if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
             os.remove(input_path)
             return output_filename
         else:
-            return filename  # Fallback to original if conversion failed
-    except subprocess.CalledProcessError:
-        return filename  # Fallback to original if ffmpeg errors
+            print(f"[Premiere] Output file is empty or missing: {output_path}")
+            return filename
+    except subprocess.CalledProcessError as e:
+        print(f"[Premiere] FFmpeg error: {e.stderr[:500] if e.stderr else 'unknown'}")
+        # Clean up empty/failed output
+        if os.path.exists(output_path):
+            os.remove(output_path)
+        return filename
 
 
 def do_download(task_id, url, quality, premiere_mode=False):
