@@ -459,6 +459,75 @@ body {
     color: var(--text-primary);
 }
 
+/* ===== PREMIERE TOGGLE ===== */
+.premiere-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    padding: 12px 16px;
+    background: rgba(138, 43, 226, 0.08);
+    border: 1px solid rgba(138, 43, 226, 0.2);
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+    user-select: none;
+}
+
+.premiere-toggle:hover {
+    background: rgba(138, 43, 226, 0.12);
+    border-color: rgba(138, 43, 226, 0.35);
+}
+
+.premiere-toggle input[type="checkbox"] {
+    display: none;
+}
+
+.toggle-slider {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    transition: var(--transition);
+    flex-shrink: 0;
+}
+
+.toggle-slider::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    background: var(--text-muted);
+    border-radius: 50%;
+    transition: var(--transition);
+}
+
+.premiere-toggle input:checked + .toggle-slider {
+    background: rgba(138, 43, 226, 0.5);
+}
+
+.premiere-toggle input:checked + .toggle-slider::after {
+    transform: translateX(20px);
+    background: #a855f7;
+    box-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
+}
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: var(--transition);
+}
+
+.premiere-toggle input:checked ~ .toggle-label {
+    color: #a855f7;
+}
+
 /* ===== PROGRESS ===== */
 .progress-section {
     animation: slideUp 0.5s ease;

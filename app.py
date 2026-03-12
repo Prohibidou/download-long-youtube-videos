@@ -76,7 +76,42 @@ def has_ffmpeg():
     return shutil.which('ffmpeg') is not None
 
 
-def do_download(task_id, url, quality):
+def convert_to_cfr(task_id, filename):
+    """Convert a VFR video to CFR (Constant Frame Rate) for Adobe Premiere compatibility."""
+    import subprocess
+
+    input_path = os.path.join(DOWNLOAD_DIR, filename)
+    base, ext = os.path.splitext(filename)
+    output_filename = base + '_premiere' + ext
+    output_path = os.path.join(DOWNLOAD_DIR, output_filename)
+
+    cmd = [
+        'ffmpeg', '-i', input_path,
+        '-c:v', 'libx264',     # H.264 codec (Premiere-friendly)
+        '-preset', 'medium',    # Balance speed/quality
+        '-crf', '18',           # High quality (lower = better, 18 is visually lossless)
+        '-r', '30',             # Force 30fps constant
+        '-vsync', 'cfr',        # Constant frame rate
+        '-c:a', 'aac',          # AAC audio
+        '-b:a', '192k',         # Good audio bitrate
+        '-movflags', '+faststart',  # Web-optimized MP4
+        '-y',                   # Overwrite output
+        output_path
+    ]
+
+    try:
+        subprocess.run(cmd, check=True, capture_output=True)
+        # Remove original VFR file, keep only the CFR version
+        if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
+            os.remove(input_path)
+            return output_filename
+        else:
+            return filename  # Fallback to original if conversion failed
+    except subprocess.CalledProcessError:
+        return filename  # Fallback to original if ffmpeg errors
+
+
+def do_download(task_id, url, quality, premiere_mode=False):
     """Background download function."""
     progress_store[task_id] = {
         'status': 'downloading',
@@ -136,11 +171,16 @@ def do_download(task_id, url, quality):
             # Find the actual downloaded file by scanning the downloads dir
             actual_file = None
             for f in os.listdir(DOWNLOAD_DIR):
-                if f.startswith(task_id):
+                if f.startswith(task_id) and not f.endswith('.part'):
                     actual_file = f
                     break
 
             if actual_file:
+                # Adobe Premiere mode: convert VFR to CFR
+                if premiere_mode and ffmpeg_available:
+                    progress_store[task_id]['status'] = 'converting'
+                    actual_file = convert_to_cfr(task_id, actual_file)
+
                 # Clean display name: remove the task_id prefix
                 display_name = actual_file
                 prefix = f'{task_id}_'
@@ -164,13 +204,14 @@ def start_download():
     data = request.get_json()
     url = data.get('url', '').strip()
     quality = data.get('quality', 'best')
+    premiere_mode = data.get('premiere', False)
 
     if not url:
         return jsonify({'error': 'URL es requerida'}), 400
 
     task_id = str(uuid.uuid4())[:8]
 
-    thread = threading.Thread(target=do_download, args=(task_id, url, quality))
+    thread = threading.Thread(target=do_download, args=(task_id, url, quality, premiere_mode))
     thread.daemon = True
     thread.start()
 

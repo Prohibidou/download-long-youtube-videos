@@ -11,6 +11,7 @@ const viewCount = document.getElementById('viewCount');
 const duration = document.getElementById('duration');
 const qualitySelect = document.getElementById('qualitySelect');
 const downloadBtn = document.getElementById('downloadBtn');
+const premiereCheck = document.getElementById('premiereCheck');
 const progressSection = document.getElementById('progressSection');
 const progressTitle = document.getElementById('progressTitle');
 const progressPercent = document.getElementById('progressPercent');
@@ -131,7 +132,7 @@ downloadBtn.addEventListener('click', async () => {
         const res = await fetch('/api/download', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url: currentUrl, quality }),
+            body: JSON.stringify({ url: currentUrl, quality, premiere: premiereCheck.checked }),
         });
 
         const data = await res.json();
@@ -173,6 +174,12 @@ function trackProgress(taskId) {
             progressBar.style.width = '99%';
             progressSpeed.textContent = '';
             progressEta.textContent = 'Casi listo...';
+        } else if (data.status === 'converting') {
+            progressTitle.textContent = 'Optimizando para Adobe Premiere...';
+            progressPercent.textContent = '';
+            progressBar.style.width = '100%';
+            progressSpeed.textContent = 'Convirtiendo VFR a CFR (H.264)';
+            progressEta.textContent = 'Esto puede tardar unos minutos...';
         } else if (data.status === 'done') {
             evtSource.close();
             showDone(data.filename, data.display_name || data.filename);
