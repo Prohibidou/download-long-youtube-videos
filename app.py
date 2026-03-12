@@ -33,7 +33,7 @@ def get_info():
         'quiet': True,
         'no_warnings': True,
         'skip_download': True,
-        'cookiesfrombrowser': ('chrome',),
+        'extractor_args': {'youtube': {'player_client': ['mweb']}},
     }
 
     try:
@@ -163,7 +163,7 @@ def do_download(task_id, url, quality, premiere_mode=False):
         'progress_hooks': [progress_hook],
         'quiet': True,
         'no_warnings': True,
-        'cookiesfrombrowser': ('chrome',),
+        'extractor_args': {'youtube': {'player_client': ['mweb']}},
     }
 
     if ffmpeg_available:
